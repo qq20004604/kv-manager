@@ -44,7 +44,8 @@ c.get_value([key])
 
 ```
 def index(request):
+    # return HttpResponse('Home Page')
     return render(request, 'dynamic.html', {
-        'foo': c.get_value('test.foo')
+        'foo': c.get_value('foo')
     })
 ```

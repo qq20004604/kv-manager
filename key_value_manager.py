@@ -3,6 +3,7 @@
 import redis
 import threading
 import time
+import sys
 from .mysql_lingling import MySQLTool
 from .key import Key
 
@@ -36,7 +37,11 @@ KeyValueGetter: key-value获取控制器
 
 def log(msg):
     with open('./log/pk-kvm-err.log', 'a')as f:
-        f.write(msg)
+        f.write('%s||%s：%s\n' % (
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            sys._getframe(1).f_code.co_name,  # 执行errlog这个函数的函数名字，即上一级函数
+            msg
+        ))
     # print(msg)
 
 
@@ -166,10 +171,14 @@ class KeyValueManager(object):
         # print(self._mysql_args)
         with MySQLTool(**self._mysql_args) as m2:
             for k in not_update_keys:
+                [appname, key] = k.split('.')
                 result2 = m2.run_sql([
-                    ['SELECT * FROM key_value where k = %s', [k]]
+                    [
+                        'select (val) from key_value where k = %s and appid = (select id from app where app_name =%s)',
+                        [key, appname]
+                    ]
                 ])
-                # print('result2', result2)
+                print('result2', result2)
                 if result2 is False:
                     list.append({
                         'key': k,
@@ -177,10 +186,10 @@ class KeyValueManager(object):
                         'is_error': True
                     })
                 else:
-                    i = result2[0]
+                    val = result2[0][0]
                     list.append({
-                        'key': i[1],
-                        'value': i[2],
+                        'key': k,
+                        'value': val,
                         'is_error': False
                     })
         return list

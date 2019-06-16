@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 from mysql import connector
 from ..printcolor_lingling import print_testresult
 import time
@@ -15,13 +16,18 @@ _unix_socket = None
 
 def errlog(msg):
     with open('./log/mysql-err.log', 'a')as f:
-        f.write('%s\n' % msg)
+        f.write('%s||%s：%s\n' % (
+            time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            sys._getframe(1).f_code.co_name,  # 执行errlog这个函数的函数名字，即上一级函数
+            msg
+        ))
 
 
 def sqllog(sql, args=[]):
     with open('./log/mysql.log', 'a')as f:
-        f.write('%s||%s\n' % (
+        f.write('%s||%s：%s\n' % (
             time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            sys._getframe(1).f_code.co_name,  # 执行errlog这个函数的函数名字，即上一级函数
             sql % tuple(args)
         ))
 
